@@ -82,7 +82,7 @@
 body {
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  font-size: 16px;
+  font-size: 12.8px;
   line-height: 1.6;
   color: var(--neutral-900);
   background-color: var(--neutral-50);
@@ -102,22 +102,22 @@ h6 {
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
 }
 
 h2 {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
 }
 
 h3 {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
 h4 {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -172,7 +172,7 @@ p {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.75rem;
-  font-size: 0.9375rem;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.5;
   border-radius: var(--radius-md);
@@ -256,7 +256,7 @@ p {
 .modern-input {
   width: 100%;
   padding: 0.875rem 1rem;
-  font-size: 0.9375rem;
+  font-size: 0.75rem;
   line-height: 1.5;
   color: var(--neutral-900);
   background-color: white;
@@ -307,7 +307,7 @@ textarea.modern-input {
 
 .modern-header h1 {
   color: white;
-  font-size: 1.75rem;
+  font-size: 1.4rem;
   font-weight: 700;
   margin: 0;
 }
@@ -420,7 +420,7 @@ textarea.modern-input {
 }
 
 .stat-card h3 {
-  font-size: 0.75rem;
+  font-size: 0.6rem;
   font-weight: 600;
   color: var(--neutral-500);
   margin-bottom: 0.75rem;
@@ -429,7 +429,7 @@ textarea.modern-input {
 }
 
 .stat-card .stat-value {
-  font-size: 2.25rem;
+  font-size: 1.2rem;
   font-weight: 800;
   line-height: 1;
   margin: 0;
@@ -453,7 +453,7 @@ textarea.modern-input {
 .modern-table th {
   padding: 1.125rem 1rem;
   text-align: left;
-  font-size: 0.6875rem;
+  font-size: 0.55rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -466,7 +466,7 @@ textarea.modern-input {
   padding: 1.125rem 1rem;
   border-bottom: 1px solid var(--neutral-100);
   color: var(--neutral-700);
-  font-size: 0.9375rem;
+  font-size: 0.75rem;
 }
 
 .modern-table tbody tr {
@@ -520,7 +520,7 @@ textarea.modern-input {
 }
 
 .empty-state p {
-  font-size: 1rem;
+  font-size: 0.8rem;
   margin-top: 0.5rem;
 }
 
@@ -541,14 +541,14 @@ textarea.modern-input {
 /* Responsive Typography */
 @media (max-width: 640px) {
   h1 {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   h2 {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
   }
 
   h3 {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 }

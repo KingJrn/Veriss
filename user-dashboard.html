@@ -11,102 +11,691 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/user.js"></script>
+    <script src="assets/js/org.js"></script>
+    <style>
+      /* Sidebar Styles */
+      .sidebar {
+        width: 260px;
+        min-height: 100vh;
+        background: white;
+        border-right: 1px solid var(--neutral-200);
+        position: fixed;
+        left: 0;
+        top: 0;
+        padding-top: 80px;
+        transition: transform 0.3s ease;
+        z-index: 100;
+      }
+
+      .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1.5rem;
+        color: var(--neutral-700);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border-left: 3px solid transparent;
+      }
+
+      .sidebar-item:hover {
+        background: var(--success-50);
+        color: var(--success-700);
+      }
+
+      .sidebar-item.active {
+        background: var(--success-50);
+        color: var(--success-700);
+        border-left-color: var(--success-600);
+        font-weight: 600;
+      }
+
+      .main-content {
+        margin-left: 260px;
+        min-height: 100vh;
+        background: var(--neutral-50);
+      }
+
+      .header-bar {
+        position: fixed;
+        top: 0;
+        left: 260px;
+        right: 0;
+        height: 80px;
+        background: white;
+        border-bottom: 1px solid var(--neutral-200);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2rem;
+        z-index: 90;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .content-area {
+        margin-top: 80px;
+        padding: 2rem;
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 2rem;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: var(--radius-lg);
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-2xl);
+      }
+
+      .modal-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--neutral-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-body {
+        padding: 2rem;
+      }
+
+      .form-section {
+        margin-bottom: 2rem;
+      }
+
+      .form-section-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--neutral-100);
+      }
+
+      /* Service Card Styles */
+      .service-card {
+        background: white;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        transition: all 0.2s ease;
+      }
+
+      .service-card:hover {
+        box-shadow: var(--shadow-lg);
+        border-color: var(--success-300);
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .sidebar.open {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .header-bar {
+          left: 0;
+        }
+      }
+    </style>
   </head>
 
-  <body class="bg-gradient-to-br from-neutral-50 to-neutral-100">
-    <div id="app" class="min-h-screen">
-      <!-- Enhanced Member Dashboard Header -->
-      <header class="modern-header" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #14532d 100%); box-shadow: 0 4px 20px rgba(22, 163, 74, 0.25);">
-        <div class="modern-container flex justify-between items-center">
-          <h1 class="text-2xl font-bold text-white flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
-            </div>
-            Member Dashboard
-          </h1>
+  <body>
+    <div id="app">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar" :class="{ open: sidebarOpen }">
+        <div class="flex flex-col">
+          <a @click="setActiveView('dashboard')" :class="['sidebar-item', { active: activeView === 'dashboard' }]">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+          <a @click="setActiveView('organizations')"
+            :class="['sidebar-item', { active: activeView === 'organizations' }]">
+            <i data-lucide="building-2"></i>
+            <span>My Organizations</span>
+          </a>
+          <a @click="setActiveView('payment-history')"
+            :class="['sidebar-item', { active: activeView === 'payment-history' }]">
+            <i data-lucide="file-text"></i>
+            <span>Payment History</span>
+          </a>
+          <a @click="setActiveView('receipts')" :class="['sidebar-item', { active: activeView === 'receipts' }]">
+            <i data-lucide="receipt"></i>
+            <span>Receipts</span>
+          </a>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <div class="main-content">
+        <!-- Header Bar -->
+        <header class="header-bar" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);">
           <div class="flex items-center gap-4">
-            <span class="text-white/90 font-semibold">Welcome, {{ currentUser.name }}</span>
-            <button @click="logout" class="btn btn-outline text-white border-2 border-white hover:bg-white hover:text-success-700 font-semibold">
-              <i data-lucide="log-out" class="w-4 h-4"></i>
+            <button @click="toggleSidebar" class="lg:hidden text-white">
+              <i data-lucide="menu"></i>
+            </button>
+            <h1 class="text-lg font-bold text-white">VERISS PAYMENTS</h1>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="text-white/90 font-semibold">{{ currentUser?.name || 'Member' }}</span>
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-semibold">
+                {{ currentUser?.name?.charAt(0) || 'M' }}
+              </div>
+            </div>
+            <button @click="logout"
+              class="btn btn-outline text-white border-2 border-white hover:bg-white hover:text-success-700 text-xs">
+              <i data-lucide="log-out"></i>
               Logout
             </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main class="modern-container py-10">
-        <div class="modern-grid modern-grid-3 mb-8">
-          <div class="stat-card">
-            <h3 class="text-sm font-medium text-neutral-600 mb-2 uppercase tracking-wide">Outstanding Payments</h3>
-            <p class="stat-value text-error-600">{{ outstandingPayments.length }}</p>
-            <div class="mt-2 flex items-center gap-1 text-error-600">
-              <i data-lucide="alert-circle" class="w-4 h-4"></i>
-              <span class="text-sm">Requires attention</span>
+        <!-- Content Area -->
+        <div class="content-area">
+          <!-- Dashboard View -->
+          <div v-if="activeView === 'dashboard'" class="dashboard-view">
+            <div class="mb-6">
+              <h2 class="text-xl font-bold text-neutral-900 mb-2">Dashboard Overview</h2>
             </div>
-          </div>
-          <div class="stat-card">
-            <h3 class="text-sm font-medium text-neutral-600 mb-2 uppercase tracking-wide">Paid This Month</h3>
-            <p class="stat-value text-success-600">{{ paidThisMonth }}</p>
-            <div class="mt-2 flex items-center gap-1 text-success-600">
-              <i data-lucide="check-circle" class="w-4 h-4"></i>
-              <span class="text-sm">On track</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <h3 class="text-sm font-medium text-neutral-600 mb-2 uppercase tracking-wide">Total Paid</h3>
-            <p class="stat-value text-primary-600">₦{{ totalPaid.toLocaleString() }}</p>
-            <div class="mt-2 flex items-center gap-1 text-primary-600">
-              <i data-lucide="trending-up" class="w-4 h-4"></i>
-              <span class="text-sm">All time</span>
-            </div>
-          </div>
-        </div>
 
-        <div class="modern-card mb-8">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-neutral-900 flex items-center gap-2">
-              <i data-lucide="clock" class="w-6 h-6 text-warning-600"></i>
-              Outstanding Payments
-            </h2>
-          </div>
-          <div v-if="outstandingPayments.length === 0" class="empty-state">
-            <i data-lucide="check-circle" class="w-16 h-16 text-success-500 mx-auto mb-4"></i>
-            <p class="text-lg font-medium text-neutral-700">No outstanding payments</p>
-            <p class="text-neutral-500">You're all caught up!</p>
-          </div>
-          <div v-else class="space-y-4">
-            <div v-for="payment in outstandingPayments"
-              class="modern-card-compact border-l-4 border-warning-500 flex justify-between items-center hover:shadow-md transition-all">
-              <div class="flex-1">
-                <h3 class="font-semibold text-neutral-900 mb-1">{{ payment.dueTitle || 'Monthly Due' }}</h3>
-                <p class="text-neutral-600 mb-2">Amount: <span class="font-semibold text-neutral-900">₦{{ payment.amount.toLocaleString() }}</span></p>
-                <span class="status-badge status-pending">{{ payment.status }}</span>
+            <!-- Quick Stats -->
+            <div class="modern-grid modern-grid-3 mb-8">
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-xs font-bold text-neutral-500 uppercase tracking-wider">Outstanding</h3>
+                  <i data-lucide="alert-circle" class="w-5 h-5 text-error-600"></i>
+                </div>
+                <p class="stat-value text-error-600">{{ outstandingPayments.length }}</p>
+                <p class="text-xs text-error-600 mt-1">Requires attention</p>
               </div>
-              <a :href="'make-payment.html?id=' + payment.id" class="btn btn-primary ml-4">
-                <i data-lucide="credit-card" class="w-4 h-4"></i>
-                Pay Now
-              </a>
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-xs font-bold text-neutral-500 uppercase tracking-wider">Paid This Month</h3>
+                  <i data-lucide="check-circle" class="w-5 h-5 text-success-600"></i>
+                </div>
+                <p class="stat-value text-success-600">{{ paidThisMonth }}</p>
+                <p class="text-xs text-success-600 mt-1">On track</p>
+              </div>
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-xs font-bold text-neutral-500 uppercase tracking-wider">Total Paid</h3>
+                  <i data-lucide="trending-up" class="w-5 h-5 text-primary-600"></i>
+                </div>
+                <p class="stat-value text-primary-600">₦{{ formatCurrency(totalPaid) }}</p>
+                <p class="text-xs text-primary-600 mt-1">All time</p>
+              </div>
+            </div>
+
+            <!-- Outstanding Payments -->
+            <div class="modern-card mb-8">
+              <h3 class="text-base font-semibold mb-4 flex items-center gap-2">
+                <i data-lucide="clock" class="w-5 h-5 text-warning-600"></i>
+                Outstanding Payments
+              </h3>
+              <div v-if="outstandingPayments.length === 0" class="text-center py-12 text-neutral-500">
+                <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-2 text-success-500"></i>
+                <p>No outstanding payments</p>
+              </div>
+              <div v-else class="space-y-3">
+                <div v-for="payment in outstandingPayments" :key="payment.id"
+                  class="p-4 border-l-4 border-warning-500 bg-warning-50 rounded-lg flex items-center justify-between">
+                  <div>
+                    <p class="font-semibold text-neutral-900">{{ payment.serviceTitle }}</p>
+                    <p class="text-xs text-neutral-600">₦{{ formatCurrency(payment.amount) }}</p>
+                  </div>
+                  <button @click="openPaymentModal(payment)" class="btn btn-primary text-xs">Pay Now</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Payments -->
+            <div class="modern-card">
+              <h3 class="text-base font-semibold mb-4 flex items-center gap-2">
+                <i data-lucide="history" class="w-5 h-5 text-primary-600"></i>
+                Recent Payments
+              </h3>
+              <div class="space-y-3">
+                <div v-for="payment in recentPayments" :key="payment.id"
+                  class="flex items-center justify-between p-3 rounded-lg hover:bg-neutral-50">
+                  <div>
+                    <p class="font-semibold text-neutral-900 text-xs">{{ payment.serviceTitle }}</p>
+                    <p class="text-xs text-neutral-500">{{ formatDate(payment.paymentDate) }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-success-600 text-xs">₦{{ formatCurrency(payment.amount) }}</p>
+                    <span class="status-paid status-badge text-xs">{{ payment.status }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Organizations View -->
+          <div v-if="activeView === 'organizations'" class="organizations-view">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-neutral-900">My Organizations</h2>
+              <button @click="openBrowseOrganizationsModal" class="btn btn-primary text-xs">
+                <i data-lucide="plus"></i>
+                Browse Organizations
+              </button>
+            </div>
+
+            <div v-if="subscribedOrganizations.length === 0" class="text-center py-12 text-neutral-500">
+              <i data-lucide="building-2" class="w-16 h-16 mx-auto mb-4 text-neutral-300"></i>
+              <p class="text-lg font-medium mb-2">No organizations subscribed</p>
+              <p class="text-sm mb-4">Browse and subscribe to organizations to access their payment services</p>
+              <button @click="openBrowseOrganizationsModal" class="btn btn-primary">Browse Organizations</button>
+            </div>
+
+            <div v-else class="modern-grid modern-grid-2">
+              <div v-for="org in subscribedOrganizations" :key="org.orgId" class="modern-card">
+                <div class="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 class="text-base font-bold text-neutral-900 mb-1">{{ org.orgName }}</h3>
+                    <p class="text-xs text-neutral-500">Subscribed: {{ formatDate(org.subscribedDate) }}</p>
+                  </div>
+                  <button @click="leaveOrganization(org.orgId)" class="text-error-600 hover:text-error-700 text-xs">
+                    <i data-lucide="x-circle"></i>
+                    Leave
+                  </button>
+                </div>
+
+                <div class="mb-4">
+                  <h4 class="text-xs font-semibold text-neutral-700 mb-3">Available Payment Services</h4>
+                  <div v-if="getOrgServices(org.orgId).length === 0" class="text-xs text-neutral-500 py-2">
+                    No active services available
+                  </div>
+                  <div v-else class="space-y-2">
+                    <div v-for="service in getOrgServices(org.orgId)" :key="service.id" class="service-card">
+                      <div class="flex items-start justify-between mb-2">
+                        <div class="flex-1">
+                          <h5 class="font-semibold text-neutral-900 text-xs mb-1">{{ service.title }}</h5>
+                          <p class="text-xs text-neutral-600 mb-2">{{ service.description }}</p>
+                          <p class="font-bold text-primary-600 text-xs">₦{{ formatCurrency(service.amount) }}</p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-2 text-xs text-neutral-500 mb-3">
+                        <i data-lucide="calendar" class="w-3 h-3"></i>
+                        <span>Ends: {{ formatDate(service.endDate) }}</span>
+                      </div>
+                      <button @click="openPaymentModalFromService(service, org)" class="btn btn-primary text-xs w-full">
+                        Make Payment
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment History View -->
+          <div v-if="activeView === 'payment-history'" class="payment-history-view">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-neutral-900">Payment History</h2>
+              <button @click="downloadPaymentHistory" class="btn btn-secondary text-xs">
+                <i data-lucide="download"></i>
+                Download CSV
+              </button>
+            </div>
+
+            <div class="mb-4 flex gap-4">
+              <input v-model="paymentSearch" type="text" placeholder="Search payments..." class="modern-input"
+                style="width: 300px;">
+              <select v-model="paymentStatusFilter" class="modern-input" style="width: auto;">
+                <option value="">All Status</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+
+            <div class="data-table">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Service</th>
+                    <th>Organization</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Transaction ID</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="payment in filteredPayments" :key="payment.id">
+                    <td>{{ formatDate(payment.paymentDate) || 'N/A' }}</td>
+                    <td class="font-semibold">{{ payment.serviceTitle }}</td>
+                    <td>{{ getOrgName(payment.orgId) }}</td>
+                    <td class="font-semibold">₦{{ formatCurrency(payment.amount) }}</td>
+                    <td>
+                      <span :class="getStatusClass(payment.status)" class="status-badge">
+                        {{ payment.status }}
+                      </span>
+                    </td>
+                    <td class="font-mono text-xs">{{ payment.transactionId || 'N/A' }}</td>
+                    <td>
+                      <button v-if="payment.status === 'paid'" @click="viewReceipt(payment)"
+                        class="text-primary-600 hover:text-primary-700 text-xs">
+                        <i data-lucide="receipt"></i> Receipt
+                      </button>
+                      <span v-else class="text-neutral-400 text-xs">-</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div v-if="filteredPayments.length === 0" class="text-center py-12 text-neutral-500">
+              <i data-lucide="file-x" class="w-16 h-16 mx-auto mb-4 text-neutral-300"></i>
+              <p class="text-lg font-medium mb-2">No payment records found</p>
+              <p class="text-sm">Your payment history will appear here</p>
+            </div>
+          </div>
+
+          <!-- Receipts View -->
+          <div v-if="activeView === 'receipts'" class="receipts-view">
+            <h2 class="text-xl font-bold text-neutral-900 mb-6">My Receipts</h2>
+
+            <div class="modern-grid modern-grid-3">
+              <div v-for="payment in paidPayments" :key="payment.id" class="modern-card">
+                <div class="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 class="font-bold text-neutral-900 text-xs mb-1">{{ payment.serviceTitle }}</h3>
+                    <p class="text-xs text-neutral-500">{{ formatDate(payment.paymentDate) }}</p>
+                  </div>
+                  <span class="status-paid status-badge text-xs">Paid</span>
+                </div>
+                <div class="mb-4">
+                  <p class="text-xs text-neutral-600 mb-1">Amount: <span class="font-bold text-neutral-900">₦{{
+                      formatCurrency(payment.amount) }}</span></p>
+                  <p class="text-xs text-neutral-600 mb-1">Transaction: <span class="font-mono">{{ payment.transactionId
+                      }}</span></p>
+                  <p class="text-xs text-neutral-600">Receipt ID: <span class="font-mono">{{ payment.receiptId }}</span>
+                  </p>
+                </div>
+                <div class="flex gap-2">
+                  <button @click="viewReceipt(payment)" class="btn btn-primary text-xs flex-1">View</button>
+                  <button @click="downloadReceipt(payment)" class="btn btn-secondary text-xs flex-1">
+                    <i data-lucide="download"></i> Download
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="paidPayments.length === 0" class="text-center py-12 text-neutral-500">
+              <i data-lucide="receipt" class="w-16 h-16 mx-auto mb-4 text-neutral-300"></i>
+              <p>No receipts available</p>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="modern-card">
-          <h2 class="text-2xl font-bold text-neutral-900 mb-6 flex items-center gap-2">
-            <i data-lucide="zap" class="w-6 h-6 text-primary-600"></i>
-            Quick Actions
-          </h2>
-          <div class="modern-grid modern-grid-2">
-            <a href="make-payment.html" class="btn btn-success text-center py-4 shadow-lg hover:shadow-xl">
-              <i data-lucide="wallet" class="w-5 h-5"></i>
-              Make a Payment
-            </a>
-            <a href="payment-records.html" class="btn btn-primary text-center py-4 shadow-lg hover:shadow-xl">
-              <i data-lucide="file-text" class="w-5 h-5"></i>
-              View Payment Records
-            </a>
+      <!-- Make Payment Modal -->
+      <div v-if="showPaymentModal && selectedPaymentService" class="modal-overlay" @click.self="closePaymentModal">
+        <div class="modal-content" style="max-width: 700px;">
+          <div class="modal-header">
+            <h3 class="text-lg font-bold">Make Payment</h3>
+            <button @click="closePaymentModal" class="text-neutral-500 hover:text-neutral-900">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="space-y-6">
+              <!-- Service Info -->
+              <div class="p-4 bg-primary-50 rounded-lg">
+                <h4 class="font-bold text-neutral-900 mb-2">{{ selectedPaymentService.title }}</h4>
+                <p class="text-xs text-neutral-600 mb-3">{{ selectedPaymentService.description }}</p>
+                <p class="text-lg font-bold text-primary-600">₦{{ formatCurrency(selectedPaymentService.amount) }}</p>
+              </div>
+
+              <!-- Custom Fields -->
+              <div v-if="selectedPaymentService.customFields && selectedPaymentService.customFields.length > 0"
+                class="form-section">
+                <h4 class="form-section-title">Additional Information</h4>
+                <div class="space-y-3">
+                  <div v-for="field in selectedPaymentService.customFields" :key="field.label">
+                    <label class="block text-xs font-semibold mb-2">{{ field.label }} <span v-if="field.required"
+                        class="text-error-600">*</span></label>
+                    <input v-if="field.type === 'text' || field.type === 'email'"
+                      v-model="paymentForm.customFields[field.label]" :type="field.type" class="modern-input"
+                      :required="field.required">
+                    <input v-else-if="field.type === 'number'" v-model.number="paymentForm.customFields[field.label]"
+                      type="number" class="modern-input" :required="field.required">
+                    <input v-else-if="field.type === 'date'" v-model="paymentForm.customFields[field.label]" type="date"
+                      class="modern-input" :required="field.required">
+                    <textarea v-else-if="field.type === 'textarea'" v-model="paymentForm.customFields[field.label]"
+                      class="modern-input" rows="3" :required="field.required"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- File Requirements -->
+              <div v-if="selectedPaymentService.fileRequirements && selectedPaymentService.fileRequirements.length > 0"
+                class="form-section">
+                <h4 class="form-section-title">File Attachments</h4>
+                <div class="space-y-3">
+                  <div v-for="req in selectedPaymentService.fileRequirements" :key="req.label">
+                    <label class="block text-xs font-semibold mb-2">
+                      {{ req.label }} <span v-if="req.required" class="text-error-600">*</span>
+                      <span class="text-neutral-500 text-xs">({{ req.acceptedTypes.join(', ') }}, max {{ req.maxSize
+                        }}MB)</span>
+                    </label>
+                    <input type="file" @change="handleFileUpload($event, req.label)"
+                      :accept="req.acceptedTypes.map(t => '.' + t).join(',')" class="modern-input"
+                      :required="req.required">
+                    <div v-if="paymentForm.files[req.label]"
+                      class="mt-2 p-2 bg-success-50 rounded text-xs text-success-700">
+                      <i data-lucide="file-check" class="w-3 h-3 inline"></i> {{ paymentForm.files[req.label].name }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payment Summary -->
+              <div class="p-4 bg-neutral-50 rounded-lg">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs text-neutral-600">Service Amount</span>
+                  <span class="font-semibold text-neutral-900">₦{{ formatCurrency(selectedPaymentService.amount)
+                    }}</span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-neutral-200">
+                  <span class="font-bold text-neutral-900">Total Amount</span>
+                  <span class="font-bold text-lg text-primary-600">₦{{ formatCurrency(selectedPaymentService.amount)
+                    }}</span>
+                </div>
+              </div>
+
+              <!-- Payment Actions -->
+              <div class="flex justify-end gap-3 pt-4 border-t border-neutral-200">
+                <button @click="closePaymentModal" class="btn btn-secondary text-xs">Cancel</button>
+                <button @click="processPayment" class="btn btn-primary">
+                  <i data-lucide="credit-card"></i>
+                  Pay with Paystack
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </main>
+      </div>
+
+      <!-- Browse Organizations Modal -->
+      <div v-if="showBrowseOrganizationsModal" class="modal-overlay" @click.self="closeBrowseOrganizationsModal">
+        <div class="modal-content" style="max-width: 800px;">
+          <div class="modal-header">
+            <h3 class="text-lg font-bold">Browse Organizations</h3>
+            <button @click="closeBrowseOrganizationsModal" class="text-neutral-500 hover:text-neutral-900">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-4">
+              <input v-model="orgSearch" type="text" placeholder="Search organizations..." class="modern-input">
+            </div>
+            <div class="space-y-3 max-h-96 overflow-y-auto">
+              <div v-for="org in filteredOrganizations" :key="org.id"
+                class="p-4 border border-neutral-200 rounded-lg hover:border-primary-300 transition-colors">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h4 class="font-bold text-neutral-900 mb-1">{{ org.name }}</h4>
+                    <p class="text-xs text-neutral-600 mb-2">{{ org.description || 'No description available' }}</p>
+                    <div class="flex items-center gap-4 text-xs text-neutral-500">
+                      <span><i data-lucide="users" class="w-3 h-3 inline"></i> {{ org.members?.length || 0 }}
+                        members</span>
+                      <span><i data-lucide="credit-card" class="w-3 h-3 inline"></i> {{ org.paymentTypes?.join(', ') ||
+                        'N/A' }}</span>
+                    </div>
+                  </div>
+                  <button v-if="!isSubscribed(org.id)" @click="subscribeToOrg(org.id)" class="btn btn-primary text-xs">
+                    Subscribe
+                  </button>
+                  <span v-else class="status-paid status-badge text-xs">Subscribed</span>
+                </div>
+              </div>
+            </div>
+            <div v-if="filteredOrganizations.length === 0" class="text-center py-8 text-neutral-500">
+              <p>No organizations found</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receipt View Modal -->
+      <div v-if="showReceiptModal && selectedReceipt" class="modal-overlay" @click.self="closeReceiptModal">
+        <div class="modal-content" style="max-width: 700px;">
+          <div class="modal-header">
+            <h3 class="text-lg font-bold">Payment Receipt</h3>
+            <button @click="closeReceiptModal" class="text-neutral-500 hover:text-neutral-900">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="space-y-6">
+              <!-- Success Header -->
+              <div class="text-center p-6 bg-success-50 rounded-lg mb-4">
+                <i data-lucide="check-circle" class="w-16 h-16 text-success-600 mx-auto mb-3"></i>
+                <p class="text-lg font-bold text-success-700">Payment Successful</p>
+                <p class="text-xs text-success-600 mt-2">Your payment has been processed successfully</p>
+              </div>
+
+              <!-- Receipt Details -->
+              <div class="modern-card-compact">
+                <h4 class="font-bold text-neutral-900 mb-4 text-xs uppercase tracking-wider">Receipt Information</h4>
+                <div class="space-y-3">
+                  <div class="flex justify-between items-center py-2 border-b border-neutral-100">
+                    <span class="text-xs text-neutral-600">Receipt ID:</span>
+                    <span class="font-mono text-xs font-semibold text-neutral-900">{{ selectedReceipt.receiptId
+                      }}</span>
+                  </div>
+                  <div class="flex justify-between items-center py-2 border-b border-neutral-100">
+                    <span class="text-xs text-neutral-600">Transaction ID:</span>
+                    <span class="font-mono text-xs font-semibold text-neutral-900">{{ selectedReceipt.transactionId
+                      }}</span>
+                  </div>
+                  <div class="flex justify-between items-center py-2 border-b border-neutral-100">
+                    <span class="text-xs text-neutral-600">Payment Date:</span>
+                    <span class="text-xs font-semibold text-neutral-900">{{ formatDate(selectedReceipt.paymentDate)
+                      }}</span>
+                  </div>
+                  <div class="flex justify-between items-center py-2 border-b border-neutral-100">
+                    <span class="text-xs text-neutral-600">Payment Method:</span>
+                    <span class="text-xs font-semibold text-neutral-900">{{ selectedReceipt.paymentMethod || 'Paystack'
+                      }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Service Details -->
+              <div class="modern-card-compact">
+                <h4 class="font-bold text-neutral-900 mb-4 text-xs uppercase tracking-wider">Service Details</h4>
+                <div class="space-y-3">
+                  <div class="flex justify-between items-center py-2 border-b border-neutral-100">
+                    <span class="text-xs text-neutral-600">Service:</span>
+                    <span class="text-xs font-semibold text-neutral-900">{{ selectedReceipt.serviceTitle }}</span>
+                  </div>
+                  <div class="flex justify-between items-center py-2 border-b border-neutral-100">
+                    <span class="text-xs text-neutral-600">Organization:</span>
+                    <span class="text-xs font-semibold text-neutral-900">{{ selectedReceipt.orgName }}</span>
+                  </div>
+                  <div class="flex justify-between items-center py-2">
+                    <span class="text-xs text-neutral-600">Amount Paid:</span>
+                    <span class="text-lg font-bold text-primary-600">₦{{ formatCurrency(selectedReceipt.amount)
+                      }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payer Information -->
+              <div class="modern-card-compact">
+                <h4 class="font-bold text-neutral-900 mb-4 text-xs uppercase tracking-wider">Payer Information</h4>
+                <div class="space-y-3">
+                  <div class="flex justify-between items-center py-2 border-b border-neutral-100">
+                    <span class="text-xs text-neutral-600">Name:</span>
+                    <span class="text-xs font-semibold text-neutral-900">{{ selectedReceipt.payerName ||
+                      currentUser?.name || 'N/A' }}</span>
+                  </div>
+                  <div class="flex justify-between items-center py-2">
+                    <span class="text-xs text-neutral-600">Email:</span>
+                    <span class="text-xs font-semibold text-neutral-900">{{ selectedReceipt.payerEmail ||
+                      currentUser?.email || 'N/A' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Organization Contact -->
+              <div v-if="selectedReceipt.orgEmail || selectedReceipt.orgPhone"
+                class="modern-card-compact bg-neutral-50">
+                <h4 class="font-bold text-neutral-900 mb-4 text-xs uppercase tracking-wider">Organization Contact</h4>
+                <div class="space-y-2">
+                  <p v-if="selectedReceipt.orgEmail" class="text-xs text-neutral-600">
+                    <i data-lucide="mail" class="w-3 h-3 inline"></i> {{ selectedReceipt.orgEmail }}
+                  </p>
+                  <p v-if="selectedReceipt.orgPhone" class="text-xs text-neutral-600">
+                    <i data-lucide="phone" class="w-3 h-3 inline"></i> {{ selectedReceipt.orgPhone }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="mt-6 pt-4 border-t border-neutral-200">
+                <p class="text-xs text-neutral-500 text-center mb-4">This receipt serves as official proof of payment
+                </p>
+                <div class="flex gap-3">
+                  <button @click="downloadReceiptPDF(selectedReceipt)" class="btn btn-primary text-xs flex-1">
+                    <i data-lucide="download"></i> Download PDF
+                  </button>
+                  <button @click="printReceipt" class="btn btn-secondary text-xs flex-1">
+                    <i data-lucide="printer"></i> Print
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -115,18 +704,76 @@
       createApp({
         data() {
           return {
+            activeView: 'dashboard',
+            sidebarOpen: false,
             currentUser: null,
+            subscribedOrganizations: [],
+            allOrganizations: [],
             payments: [],
             outstandingPayments: [],
-            paidThisMonth: 0,
-            totalPaid: 0
+            showPaymentModal: false,
+            showBrowseOrganizationsModal: false,
+            showReceiptModal: false,
+            selectedPaymentService: null,
+            selectedReceipt: null,
+            selectedOrg: null,
+            orgSearch: '',
+            paymentSearch: '',
+            paymentStatusFilter: '',
+            paymentForm: {
+              customFields: {},
+              files: {}
+            }
+          }
+        },
+        computed: {
+          paidThisMonth() {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            return this.payments.filter(p =>
+              p.status === 'paid' &&
+              p.paymentDate &&
+              p.paymentDate.startsWith(currentMonth)
+            ).length;
+          },
+          totalPaid() {
+            return this.payments
+              .filter(p => p.status === 'paid')
+              .reduce((sum, p) => sum + (p.amount || 0), 0);
+          },
+          recentPayments() {
+            return this.payments
+              .filter(p => p.status === 'paid')
+              .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
+              .slice(0, 5);
+          },
+          paidPayments() {
+            return this.payments.filter(p => p.status === 'paid');
+          },
+          filteredPayments() {
+            return this.payments.filter(p => {
+              const matchesSearch = !this.paymentSearch ||
+                p.serviceTitle?.toLowerCase().includes(this.paymentSearch.toLowerCase()) ||
+                p.transactionId?.toLowerCase().includes(this.paymentSearch.toLowerCase());
+              const matchesStatus = !this.paymentStatusFilter || p.status === this.paymentStatusFilter;
+              return matchesSearch && matchesStatus;
+            });
+          },
+          filteredOrganizations() {
+            if (!this.orgSearch) return this.allOrganizations;
+            return this.allOrganizations.filter(org =>
+              org.name.toLowerCase().includes(this.orgSearch.toLowerCase())
+            );
           }
         },
         mounted() {
           lucide.createIcons();
           this.currentUser = getCurrentUser();
           if (this.currentUser && this.currentUser.role === 'user') {
-            this.loadPayments();
+            // Ensure user has an id for mock data compatibility
+            if (!this.currentUser.id) {
+              this.currentUser.id = 1;
+            }
+            this.loadData();
           } else {
             window.location.href = 'login.html';
           }
@@ -135,15 +782,23 @@
           lucide.createIcons();
         },
         methods: {
+          setActiveView(view) {
+            this.activeView = view;
+            this.sidebarOpen = false;
+          },
+          toggleSidebar() {
+            this.sidebarOpen = !this.sidebarOpen;
+          },
           logout() {
             logout();
             window.location.href = 'index.html';
           },
-          loadPayments() {
-            this.payments = getUserPayments(this.currentUser.id);
-            this.outstandingPayments = this.payments.filter(p => p.status === 'pending');
-            this.totalPaid = this.payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
-            this.paidThisMonth = this.payments.filter(p => p.status === 'paid' && p.paymentDate && p.paymentDate.startsWith(new Date().toISOString().slice(0, 7))).length;
+          formatCurrency(amount) {
+            return (amount || 0).toLocaleString();
+          },
+          formatDate(date) {
+            if (!date) return 'N/A';
+            return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
           },
           getStatusClass(status) {
             return {
@@ -151,6 +806,262 @@
               'pending': 'status-pending',
               'failed': 'status-failed'
             }[status] || 'bg-neutral-100 text-neutral-800';
+          },
+          loadData() {
+            // Ensure user has an id
+            if (!this.currentUser.id) {
+              this.currentUser.id = 1; // Default to userId 1 for mock data
+            }
+
+            // Load user subscriptions
+            this.subscribedOrganizations = getUserSubscriptions(this.currentUser.id);
+
+            // Load all organizations (for browsing)
+            this.allOrganizations = [
+              {
+                id: 1,
+                name: 'Veriss Medical Association',
+                description: 'Professional medical association for healthcare providers',
+                members: [{}, {}, {}],
+                paymentTypes: ['dues', 'fines', 'contributions']
+              },
+              {
+                id: 2,
+                name: 'Engineering Society',
+                description: 'Professional engineering organization',
+                members: [{}, {}],
+                paymentTypes: ['dues', 'workshops']
+              }
+            ];
+
+            // Load payments
+            this.payments = getUserPayments(this.currentUser.id);
+            this.outstandingPayments = this.payments.filter(p => p.status === 'pending');
+          },
+          getOrgServices(orgId) {
+            return getOrganizationServices(orgId);
+          },
+          getOrgName(orgId) {
+            const org = this.subscribedOrganizations.find(o => o.orgId === orgId);
+            return org ? org.orgName : 'Unknown';
+          },
+          openPaymentModal(payment) {
+            // Find the service for this payment
+            const org = this.subscribedOrganizations.find(o => o.orgId === payment.orgId);
+            if (org) {
+              const service = this.getOrgServices(payment.orgId).find(s => s.id === payment.serviceId);
+              if (service) {
+                this.selectedPaymentService = service;
+                this.selectedOrg = org;
+                this.paymentForm = { customFields: {}, files: {} };
+                this.showPaymentModal = true;
+              }
+            }
+          },
+          openPaymentModalFromService(service, org) {
+            this.selectedPaymentService = service;
+            this.selectedOrg = org;
+            this.paymentForm = { customFields: {}, files: {} };
+            this.showPaymentModal = true;
+          },
+          closePaymentModal() {
+            this.showPaymentModal = false;
+            this.selectedPaymentService = null;
+            this.selectedOrg = null;
+            this.paymentForm = { customFields: {}, files: {} };
+          },
+          handleFileUpload(event, label) {
+            const file = event.target.files[0];
+            if (file) {
+              this.paymentForm.files[label] = file;
+            }
+          },
+          processPayment() {
+            // Validate required fields
+            if (this.selectedPaymentService.customFields) {
+              const requiredFields = this.selectedPaymentService.customFields.filter(f => f.required);
+              for (const field of requiredFields) {
+                if (!this.paymentForm.customFields[field.label]) {
+                  alert(`Please fill in required field: ${field.label}`);
+                  return;
+                }
+              }
+            }
+
+            // Validate required files
+            if (this.selectedPaymentService.fileRequirements) {
+              const requiredFiles = this.selectedPaymentService.fileRequirements.filter(f => f.required);
+              for (const req of requiredFiles) {
+                if (!this.paymentForm.files[req.label]) {
+                  alert(`Please upload required file: ${req.label}`);
+                  return;
+                }
+              }
+            }
+
+            // Process payment (mock Paystack integration)
+            const payment = makePayment({
+              userId: this.currentUser.id,
+              orgId: this.selectedOrg.orgId,
+              serviceId: this.selectedPaymentService.id,
+              serviceTitle: this.selectedPaymentService.title,
+              amount: this.selectedPaymentService.amount,
+              customFields: this.paymentForm.customFields,
+              files: Object.keys(this.paymentForm.files).map(label => ({
+                label,
+                fileName: this.paymentForm.files[label].name
+              }))
+            });
+
+            this.payments.push(payment);
+            this.outstandingPayments = this.payments.filter(p => p.status === 'pending');
+            this.closePaymentModal();
+
+            // Show receipt
+            this.viewReceipt(payment);
+          },
+          openBrowseOrganizationsModal() {
+            this.orgSearch = '';
+            this.showBrowseOrganizationsModal = true;
+          },
+          closeBrowseOrganizationsModal() {
+            this.showBrowseOrganizationsModal = false;
+          },
+          isSubscribed(orgId) {
+            return this.subscribedOrganizations.some(o => o.orgId === orgId && o.status === 'active');
+          },
+          subscribeToOrg(orgId) {
+            const subscription = subscribeToOrganization(this.currentUser.id, orgId);
+            if (subscription) {
+              this.subscribedOrganizations = getUserSubscriptions(this.currentUser.id);
+              alert('Successfully subscribed to organization');
+            } else {
+              alert('Already subscribed or subscription failed');
+            }
+          },
+          leaveOrganization(orgId) {
+            if (confirm('Are you sure you want to leave this organization? You will lose access to their payment services, but your payment history will be preserved.')) {
+              unsubscribeFromOrganization(this.currentUser.id, orgId);
+              this.subscribedOrganizations = getUserSubscriptions(this.currentUser.id);
+              alert('You have left the organization. Your payment history is preserved.');
+            }
+          },
+          viewReceipt(payment) {
+            const receipt = generateReceipt(payment.id);
+            if (receipt) {
+              this.selectedReceipt = {
+                ...receipt,
+                serviceTitle: payment.serviceTitle || receipt.serviceTitle,
+                orgName: this.getOrgName(payment.orgId) || receipt.orgName,
+                payerName: payment.payerName || this.currentUser?.name,
+                payerEmail: payment.payerEmail || this.currentUser?.email
+              };
+              this.showReceiptModal = true;
+            } else {
+              alert('Receipt not found for this payment');
+            }
+          },
+          closeReceiptModal() {
+            this.showReceiptModal = false;
+            this.selectedReceipt = null;
+          },
+          downloadReceipt(payment) {
+            const receipt = generateReceipt(payment.id);
+            if (receipt) {
+              this.downloadReceiptPDF({
+                ...receipt,
+                serviceTitle: payment.serviceTitle || receipt.serviceTitle,
+                orgName: this.getOrgName(payment.orgId) || receipt.orgName,
+                payerName: payment.payerName || this.currentUser?.name,
+                payerEmail: payment.payerEmail || this.currentUser?.email
+              });
+            } else {
+              alert('Receipt not found for this payment');
+            }
+          },
+          downloadReceiptPDF(receipt) {
+            // Create a formatted text file (in real app, this would be a PDF)
+            const formattedContent = `
+╔══════════════════════════════════════════════════════════╗
+║                  PAYMENT RECEIPT                        ║
+╚══════════════════════════════════════════════════════════╝
+
+Receipt ID:        ${receipt.receiptId}
+Transaction ID:    ${receipt.transactionId}
+Payment Date:      ${this.formatDate(receipt.paymentDate)}
+Payment Method:    ${receipt.paymentMethod || 'Paystack'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ORGANIZATION INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Organization:      ${receipt.orgName}
+${receipt.orgEmail ? `Email:             ${receipt.orgEmail}` : ''}
+${receipt.orgPhone ? `Phone:             ${receipt.orgPhone}` : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PAYER INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Name:              ${receipt.payerName || 'N/A'}
+Email:             ${receipt.payerEmail || 'N/A'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PAYMENT DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Service:           ${receipt.serviceTitle}
+Amount Paid:       ₦${receipt.amount.toLocaleString()}
+Status:            ${receipt.status.toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This receipt serves as official proof of payment.
+Generated on: ${new Date().toLocaleString()}
+
+╔══════════════════════════════════════════════════════════╗
+║  Thank you for your payment!                             ║
+╚══════════════════════════════════════════════════════════╝
+          `.trim();
+
+            // Create and download file
+            const blob = new Blob([formattedContent], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Receipt-${receipt.receiptId}-${receipt.paymentDate}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            // Show success message
+            alert(`Receipt ${receipt.receiptId} downloaded successfully!`);
+          },
+          printReceipt() {
+            window.print();
+          },
+          downloadPaymentHistory() {
+            // Mock CSV download
+            const csvContent = [
+              ['Date', 'Service', 'Organization', 'Amount', 'Status', 'Transaction ID'],
+              ...this.payments.map(p => [
+                p.paymentDate || 'N/A',
+                p.serviceTitle || 'N/A',
+                this.getOrgName(p.orgId),
+                p.amount || 0,
+                p.status || 'N/A',
+                p.transactionId || 'N/A'
+              ])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `payment-history-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
           }
         }
       }).mount('#app');

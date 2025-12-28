@@ -1,9 +1,9 @@
 // Mock authentication functions for Veriss Payments
 
 const mockUsers = [
-  { email: 'admin@veriss.com', password: 'admin123', role: 'admin', name: 'Super Admin' },
-  { email: 'org@example.com', password: 'org123', role: 'org', name: 'Org Admin', orgId: 1 },
-  { email: 'user@example.com', password: 'user123', role: 'user', name: 'John Doe', orgId: 1 }
+  { id: 1, email: 'admin@veriss.com', password: 'admin123', role: 'admin', name: 'Super Admin' },
+  { id: 2, email: 'org@example.com', password: 'org123', role: 'org', name: 'Org Admin', orgId: 1 },
+  { id: 1, email: 'user@example.com', password: 'user123', role: 'user', name: 'John Doe', orgId: 1 }
 ];
 
 function login(email, password) {
