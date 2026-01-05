@@ -380,10 +380,12 @@
             <i data-lucide="building-2" class="w-5 h-5"></i>
             <span>Bank Details</span>
           </a>
-          <a @click="setActiveView('settings')" :class="['sidebar-item', { active: activeView === 'settings' }]">
-            <i data-lucide="settings" class="w-5 h-5"></i>
-            <span>Settings</span>
+          <a href="/org-profile.html" class="sidebar-item" :class="{ active: activeView === 'profile' }"
+            >
+            <i data-lucide="user" class="w-5 h-5"></i>
+            <span>Profile</span>
           </a>
+
         </div>
       </aside>
 
@@ -425,6 +427,16 @@
           <div v-if="activeView === 'dashboard'" class="dashboard-view">
             <div class="mb-6">
               <h2 class="text-2xl font-bold mb-4" style="color: var(--neutral-900);">Dashboard Overview</h2>
+              <div class="flex items-center gap-4 mb-4">
+                <label for="year-select" class="text-sm font-semibold" style="color: var(--neutral-700);">Filter by
+                  Year:</label>
+                <select id="year-select" v-model="selectedYear" @change="loadDashboardStats(selectedYear)"
+                  class="modern-input" style="max-width: 150px;">
+                  <option value="all">All Years</option>
+                  <option v-for="year in availableYears" :value="year" :key="year">{{ year }}</option>
+                </select>
+              </div>
+              <p v-if="noDataMessage" class="text-red-500 text-sm mt-2">{{ noDataMessage }}</p>
             </div>
 
             <!-- Stats Cards -->
@@ -478,7 +490,7 @@
               <!-- Recent Activity -->
               <div class="modern-card">
                 <h3 class="text-lg font-bold mb-4" style="color: var(--neutral-900);">Recent Activity</h3>
-                <div v-if="recentActivity.length > 0" class="space-y-3">
+                <div v-if="recentActivity.length > 0" class="space-y-3 max-h-64 overflow-y-auto">
                   <div v-for="activity in recentActivity" :key="activity._id"
                     class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="w-2 h-2 rounded-full mt-2" style="background: var(--primary-600);"></div>
@@ -498,7 +510,7 @@
               <!-- Top Services -->
               <div class="modern-card">
                 <h3 class="text-lg font-bold mb-4" style="color: var(--neutral-900);">Top Payment Services</h3>
-                <div v-if="topServices.length > 0" class="space-y-3">
+                <div v-if="topServices.length > 0" class="space-y-3 max-h-64 overflow-y-auto">
                   <div v-for="(service, idx) in topServices" :key="service._id"
                     class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="flex-1">
@@ -562,49 +574,65 @@
             </div>
 
 
-         <!-- Services Grid -->
-<div v-if="filteredServices.length > 0"
-  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-  <div v-for="service in filteredServices" :key="service._id" class="service-card" style="padding: 1.15rem;">
-    <!-- Card Header -->
-    <div class="flex items-center justify-between mb-3.5">
-      <h3 class="font-semibold text-base truncate" style="color: var(--neutral-900);">{{ service.name }}</h3>
-      <span :class="getStatusBadgeClass(service.status)" class="status-badge text-xs ml-2 flex-shrink-0">
-        {{ service.status }}
-      </span>
-    </div>
-    
-    <!-- Balance & Transactions Combined -->
-    <div class="mb-3.5">
-      <p class="text-xs font-medium uppercase tracking-wider mb-2" style="color: var(--neutral-500);">Balance</p>
-      <p class="text-xl font-bold mb-2.5" style="color: var(--primary-600);">
-        ₦{{ formatCurrency(service.totalAmountPaid || 0) }}
-      </p>
-      <div class="flex items-center gap-1.5">
-        <i data-lucide="activity" class="w-3.5 h-3.5" style="color: var(--neutral-400);"></i>
-        <span class="text-xs" style="color: var(--neutral-600);">
-          {{ service.totalUsage || 0 }} payments • ₦{{ formatCurrency(service.serviceCost) }}/each
-        </span>
-      </div>
-    </div>
-    
-    <!-- Action Buttons -->
-    <div class="flex gap-1.5">
-      <button @click="viewService(service)" class="btn btn-primary text-xs flex-1 px-2.5 py-2">
-        <i data-lucide="eye" class="w-3 h-3"></i>
-        View
-      </button>
-      <button @click="editService(service)" class="btn btn-secondary text-xs flex-1 px-2.5 py-2">
-        <i data-lucide="edit" class="w-3 h-3"></i>
-        Edit
-      </button>
-      <button @click="deleteService(service)" class="btn btn-secondary text-xs px-2.5 py-2"
-        style="background: var(--error-500); color: white;">
-        <i data-lucide="trash-2" class="w-3 h-3"></i>
-      </button>
-    </div>
-  </div>
-</div>
+            <!-- Services Grid -->
+            <div v-if="filteredServices.length > 0"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+
+              <div v-for="service in filteredServices" :key="service._id" class="service-card"
+                style="padding: 1.15rem;">
+                <!-- Card Header -->
+                <div class="flex items-center justify-between mb-3.5">
+                  <h3 class="font-semibold text-base truncate" style="color: var(--neutral-900);">
+                    {{ service.name }}
+                  </h3>
+
+                  <span :class="getStatusBadgeClass(service.status)" class="status-badge text-xs ml-2 flex-shrink-0">
+                    {{ service.status }}
+                  </span>
+                </div>
+
+                <!-- Service Info -->
+                <div class="mb-3.5 space-y-2">
+                  <p class="text-xs uppercase tracking-wider font-medium" style="color: var(--neutral-500);">
+                    Service Type
+                  </p>
+
+                  <p class="text-sm font-semibold" style="color: var(--primary-600);">
+                    {{ service.type }}
+                  </p>
+
+                  <p class="text-xs line-clamp-2" style="color: var(--neutral-600);">
+                    {{ service.description || 'No description provided' }}
+                  </p>
+
+                  <div class="flex items-center gap-1.5 mt-2">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5" style="color: var(--neutral-400);"></i>
+                    <span class="text-xs" style="color: var(--neutral-500);">
+                      Created {{ formatDate(service.createdAt) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-1.5">
+                  <button @click="viewService(service)" class="btn btn-primary text-xs flex-1 px-2.5 py-2">
+                    <i data-lucide="eye" class="w-3 h-3"></i>
+                    View
+                  </button>
+
+                  <button @click="editService(service)" class="btn btn-secondary text-xs flex-1 px-2.5 py-2">
+                    <i data-lucide="edit" class="w-3 h-3"></i>
+                    Edit
+                  </button>
+
+                  <button @click="deleteService(service)" class="btn btn-secondary text-xs px-2.5 py-2"
+                    style="background: var(--error-500); color: white;">
+                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Empty State -->
             <div v-else class="empty-state">
               <i data-lucide="credit-card" class="empty-state-icon"></i>
@@ -938,18 +966,9 @@
                 </select>
               </div>
 
-              <!-- Bank Code -->
               <div>
-                <label class="block text-sm font-bold mb-2" style="color: var(--neutral-700);">
-                  Bank Code <span style="color: var(--error-500);">*</span>
-                </label>
-                <input v-model="newBankAccount.bankCode" type="text" required class="modern-input"
-                  placeholder="e.g., 057, 058, 044">
-                <p class="text-xs mt-1" style="color: var(--neutral-500);">
-                  Enter the bank's code (usually 3 digits)
-                </p>
+                <input type="hidden" v-model="newBankAccount.bankCode" />
               </div>
-
               <!-- Account Number -->
               <div>
                 <label class="block text-sm font-bold mb-2" style="color: var(--neutral-700);">
@@ -1173,14 +1192,7 @@
 
               <!-- Bank Code -->
               <div>
-                <label class="block text-sm font-bold mb-2" style="color: var(--neutral-700);">
-                  Bank Code <span style="color: var(--error-500);">*</span>
-                </label>
-                <input v-model="newBankAccount.bankCode" type="text" required class="modern-input"
-                  placeholder="e.g., 057, 058, 044">
-                <p class="text-xs mt-1" style="color: var(--neutral-500);">
-                  Enter the bank's code (usually 3 digits)
-                </p>
+                <input type="hidden" v-model="newBankAccount.bankCode" />
               </div>
 
               <!-- Account Number -->
@@ -1408,6 +1420,9 @@
             },
             recentActivity: [],
             topServices: [],
+            selectedYear: 'all',
+            availableYears: [],
+            noDataMessage: '',
 
             // ========== PAYMENT SERVICES ==========
             paymentServices: [],
@@ -1522,6 +1537,10 @@
           // Check authentication
           await this.initializeAuth();
 
+          // Populate available years (from 2020 to current year)
+          const currentYear = new Date().getFullYear();
+          this.availableYears = Array.from({ length: currentYear - 2020 + 1 }, (_, i) => currentYear - i);
+
           // Load all data
           if (this.token) {
             await this.loadAllData();
@@ -1587,6 +1606,7 @@
                 ]);
               } else if (this.activeView === 'payment-services') {
                 await this.loadPaymentServices();
+                await this.loadBankDetails();
               } else if (this.activeView === 'subscribers') {
                 await this.loadSubscribers();
               } else if (this.activeView === 'bank-details') {
@@ -1604,8 +1624,7 @@
 
           async loadDashboardStats() {
             try {
-              const currentYear = new Date().getFullYear();
-              const response = await getOrgOverviewApi(currentYear, this.token);
+              const response = await getOrgOverviewApi(this.selectedYear, this.token);
 
               if (response.success) {
                 this.stats = {
@@ -1614,11 +1633,18 @@
                   paymentServices: response.data.paymentServices || 0,
                   totalRevenue: response.data.totalRevenue || 0,
                 };
+                // Check if no data for specific year
+                this.noDataMessage = '';
+                if (this.stats.subscribers === 0 && this.stats.payments === 0 && this.stats.paymentServices === 0 && this.stats.totalRevenue === 0) {
+                  this.noDataMessage = 'No data available for the selected year.';
+                }
               } else {
                 console.error('Failed to load stats:', response.message);
+                this.noDataMessage = 'Failed to load data for the selected year.';
               }
             } catch (error) {
               console.error('Error loading dashboard stats:', error);
+              this.noDataMessage = 'Error loading dashboard statistics.';
             }
           },
 
@@ -1729,7 +1755,7 @@
 
           /**
            * Edit Payment Service
-           * Location: Replace the editService() method in Part 2
+           
            */
           async editService(service) {
             try {
@@ -1757,7 +1783,6 @@
 
               // Store the service ID for update
               this.editingServiceId = service._id;
-
               // Open modal in edit mode
               this.isEditMode = true;
               this.showCreateServiceModal = true;
@@ -1971,7 +1996,7 @@
               const response = await getOrgBankCountriesApi(this.token);
 
               if (response.success) {
-                this.bankCountries = response.data || [];
+                this.bankCountries = (Array.isArray(response.data) ? response.data : []).filter(country => country != null);
               }
             } catch (error) {
               console.error('Error loading bank countries:', error);
@@ -1983,7 +2008,7 @@
               const response = await getOrgBankAvailableApi(country, this.token);
 
               if (response.success) {
-                this.banks = response.data || [];
+                this.banks = (Array.isArray(response.data) ? response.data : []).filter(bank => bank != null);
               } else {
                 this.banks = [];
               }

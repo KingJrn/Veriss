@@ -199,7 +199,10 @@
               style="background: linear-gradient(to bottom right, var(--success-100), var(--success-200)); color: var(--success-600);">
               <i data-lucide="user-plus" class="w-10 h-10"></i>
             </div>
-            <h2 class="text-3xl font-extrabold mb-2" style="color: var(--neutral-900);">Create Your Account</h2>
+            <h2 class="font-extrabold mb-2 text-2xl sm:text-3xl lg:text-4xl" style="color: var(--neutral-900);">
+              Create Your Account
+            </h2>
+
             <p class="font-medium" style="color: var(--neutral-600);">Join Veriss Payments today</p>
           </div>
 
@@ -214,7 +217,7 @@
                 <!-- Organization Option -->
                 <label class="radio-card" :class="{ 'selected': formData.role === 'professional-organisation' }">
                   <input v-model="formData.role" type="radio" value="professional-organisation" class="sr-only">
-                  <div class="flex items-center gap-3">
+                  <div class="flex flex-col lg-flex-row items-center gap-3 m-auto">
                     <i data-lucide="building-2" class="w-5 h-5"
                       :style="{ color: formData.role === 'professional-organisation' ? 'var(--primary-600)' : 'var(--neutral-400)' }"></i>
                     <span class="font-medium"
@@ -225,7 +228,7 @@
                 <!-- Member/User Option -->
                 <label class="radio-card" :class="{ 'selected': formData.role === 'user' }">
                   <input v-model="formData.role" type="radio" value="user" class="sr-only">
-                  <div class="flex items-center gap-3">
+                  <div class="flex m-auto items-center gap-3 flex-col lg-flex-row ">
                     <i data-lucide="user" class="w-5 h-5"
                       :style="{ color: formData.role === 'user' ? 'var(--primary-600)' : 'var(--neutral-400)' }"></i>
                     <span class="font-medium"
@@ -258,25 +261,24 @@
                 <label for="title" class="block text-sm font-bold mb-2" style="color: var(--neutral-700);">
                   Title <span style="color: #ef4444;">*</span>
                 </label>
+
                 <div class="relative">
+                  <!-- Left Icon -->
                   <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <i data-lucide="crown" class="w-5 h-5" style="color: var(--neutral-400);"></i>
                   </div>
-                  <select v-model="formData.title" id="title" name="title" required
-                    class="modern-input pl-12 text-base appearance-none cursor-pointer" @change="validateTitle">
-                    <option value="" disabled>Select title</option>
-                    <option value="Mr.">Mr.</option>
-                    <option value="Mrs.">Mrs.</option>
-                    <option value="Ms.">Ms.</option>
-                    <option value="Dr.">Dr.</option>
-                    <option value="Prof.">Prof.</option>
-                  </select>
-                  <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                    <i data-lucide="chevron-down" class="w-5 h-5" style="color: var(--neutral-400);"></i>
-                  </div>
+
+                  <!-- Input -->
+                  <input v-model="formData.title" id="title" name="title" type="text" required
+                    placeholder="e.g. Mr., Dr., Prof." class="modern-input pl-12 text-base" @input="validateTitle" />
                 </div>
-                <p v-if="errors.title" class="mt-1 text-sm" style="color: #dc2626;">{{ errors.title }}</p>
+
+                <!-- Error Message -->
+                <p v-if="errors.title" class="mt-1 text-sm" style="color: #dc2626;">
+                  {{ errors.title }}
+                </p>
               </div>
+
 
               <!-- Phone Number Input (Only for Members) -->
               <div v-if="formData.role === 'user'">
@@ -517,17 +519,17 @@
             // Form data object containing all user inputs
             formData: {
               role: 'user', // Default to regular user
-              name: 'John Doe',
+              name: '',
               fullName: '',
-              title: 'Software Engineer',
-              email: 'johndoe@example.com',
-              password: 'testUser@123',
-              phoneNumber: '1234567890',
-              gender: 'Male',
-              occupation: 'Tech',
-              country: 'United States',
-              state: 'California',
-              city: 'San Francisco',
+              title: '',
+              email: '',
+              password: '',
+              phoneNumber: '',
+              gender: '',
+              occupation: '',
+              country: '',
+              state: '',
+              city: '',
               orgName: '',
               orgCategory: '' // New field for organization category
             },

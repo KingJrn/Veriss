@@ -8,7 +8,7 @@ const endpoint = {
   getUserProfile: `${baseURL}/profile`,
   updateUserProfile: `${baseURL}/profile/update`,
   // Dashboard APIs
-  getOverview: `${baseURL}/overview/annual`,
+  getOverview: (year) => `${baseURL}/overview/annual?year=${year}`,
   getRecentActivity: `${baseURL}/activity`,
   getTopPaymentServices: `${baseURL}/services/top`,
   getBankCountries: `${baseURL}/bank/countries`,
@@ -28,7 +28,8 @@ const endpoint = {
 };
 
 export async function getOrgOverviewApi(year, token) {
-  return await httpRequest(`${endpoint.getOverview}?year=${year}`, {
+  
+  return await httpRequest(endpoint.getOverview(year), {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
