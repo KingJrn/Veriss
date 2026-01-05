@@ -1358,13 +1358,10 @@
 
     <!-- JavaScript will be added in Part 2 -->
     <script type="module">
-      // Part 2 will contain all the Vue.js logic and API integration
       // ===================================================================
       // ORGANIZATION DASHBOARD - COMPLETE JAVASCRIPT IMPLEMENTATION
       // ===================================================================
-      // This script should be placed in the <script type="module"> section
-      // of the org-dashboard.html file (Part 1)
-      // ===================================================================
+
 
       import { getCookie, deleteCookie } from "./assets/js/utils/cookies.js";
       import { showErrorAlert, showSuccessAlert } from "./assets/js/utils/alerts.js";
@@ -1576,6 +1573,7 @@
 
               // Get user data from cookie
               const userData = getCookie('user_data');
+              console.log('User Data:', userData);
               if (userData) {
                 try {
                   this.currentUser = userData;

@@ -483,14 +483,16 @@
 
               // ✅ success path
               setCookie("auth_token", response.token, 1);
-              setCookie("user_data", JSON.stringify(response.user), 1);
 
               localStorage.setItem(
-                "VerissApp",
-                JSON.stringify({ userType: this.userType })
+                "verissApp",
+                JSON.stringify({
+                  user_data: response.user,
+                  userType: this.userType
+                })
               );
               console.log("Login successful:", response);
-              showSuccessAlert( response.message || "Login successful!");
+              showSuccessAlert(response.message || "Login successful!");
 
               // Redirect based on user type
               if (this.userType === "organisation") {
