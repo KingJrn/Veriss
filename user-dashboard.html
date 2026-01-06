@@ -185,7 +185,7 @@
             <button @click="toggleSidebar" class="lg:hidden text-white">
               <i data-lucide="menu"></i>
             </button>
-            <h1 class="lg:text-lg font-bold text-white">VERISS PAYMENTS</h1>
+            <h1 class="text-sm lg:text-lg font-bold text-white">VERISS PAYMENTS</h1>
           </div>
           <div class="flex items-center gap-4">
             <a href="user-profile.html" class="flex items-center gap-2 cursor-pointer hover:opacity-90">
@@ -297,7 +297,7 @@
           <!-- Organizations View -->
           <div v-else-if="activeView==='organizations'" class="organizations-view">
             <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-gray-900">My Organizations</h2>
+              <h2 class="lg:text-xl font-bold text-gray-900">My Organizations</h2>
               <button @click="openBrowseModal"
                 class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
                 <i data-lucide="plus" class="w-4 h-4"></i>Browse Organizations
@@ -312,7 +312,8 @@
               <i data-lucide="building-2" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
               <p class="text-lg font-medium mb-2">No organizations subscribed</p>
               <p class="text-sm mb-4">Browse and subscribe to organizations to access their payment services</p>
-              <button @click="openBrowseModal" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700">
+              <button @click="openBrowseModal"
+                class="px-6 py-3 bg-green-600 text-sm md:text-base rounded-lg hover:bg-green-700">
                 Browse Organizations
               </button>
             </div>
@@ -322,7 +323,7 @@
                 class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                 <div class="flex items-start justify-between mb-4">
                   <div class="flex-1">
-                    <h3 class="text-base font-bold text-gray-900 mb-1 cursor-pointer hover:text-blue-600"
+                    <h3 class="md:text-base font-bold text-gray-900 mb-1 cursor-pointer hover:text-blue-600"
                       @click="viewOrganizationDetail(sub.organization._id)">
                       {{sub.organization.name}}
                     </h3>
@@ -412,6 +413,23 @@
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div v-if="totalPagesPayments > 1" class="flex justify-center items-center mt-6 space-x-2">
+              <button @click="currentPagePayments = Math.max(1, currentPagePayments - 1)"
+                :disabled="currentPagePayments === 1"
+                class="px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded-l hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                Previous
+              </button>
+              <span class="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700">
+                Page {{ currentPagePayments }} of {{ totalPagesPayments }}
+              </span>
+              <button @click="currentPagePayments = Math.min(totalPagesPayments, currentPagePayments + 1)"
+                :disabled="currentPagePayments === totalPagesPayments"
+                class="px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded-r hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                Next
+              </button>
             </div>
           </div>
         </div>
