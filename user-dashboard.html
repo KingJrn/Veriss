@@ -190,7 +190,7 @@
           <div class="flex items-center gap-4">
             <a href="user-profile.html" class="flex items-center gap-2 cursor-pointer hover:opacity-90">
               <span class="text-white/90 font-semibold">
-                {{ currentUser?.name || currentUser?.email || 'Member' }}
+                {{ currentUser?.fullName || currentUser?.email || 'Member' }}
               </span>
 
               <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-semibold">
@@ -765,15 +765,16 @@
           async initializeDashboard() {
             try {
               this.token = getCookie("auth_token");
-              const stored = localStorage.getItem("verissApp");
+             const verissApp = JSON.parse(localStorage.getItem("verissApp"));
+              const userData = verissApp?.user_data;
               if (!this.token) {
                 window.location.href = "login.html";
                 return;
               }
-              if (stored) {
+              if (userData) {
                 try {
-                  const data = JSON.parse(stored);
-                  this.currentUser = data.user_data;
+                  
+                  this.currentUser = userData;
                 } catch (e) {
                   console.error("Error parsing user data:", e);
                 }

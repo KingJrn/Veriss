@@ -408,10 +408,6 @@
                 style="background: var(--primary-600);">
                 {{ userInitials }}
               </div>
-
-              <span class="hidden md:inline text-sm" style="color: var(--neutral-700);">
-                {{ userName }}
-              </span>
             </a>
 
             <button @click="handleLogout" class="btn btn-outline text-sm px-3 py-2">
@@ -1572,14 +1568,14 @@
               }
 
               // Get user data from cookie
-              const userData = getCookie('user_data');
-              console.log('User Data:', userData);
+              const verissApp = JSON.parse(localStorage.getItem("verissApp"));
+              const userData = verissApp?.user_data;
               if (userData) {
                 try {
                   this.currentUser = userData;
-                  this.organizationName = this.currentUser.name || this.currentUser.organizationName || 'Organization';
-                  this.userName = this.currentUser.fullName || this.currentUser.name || 'User';
-                  this.userInitials = this.userName.charAt(0).toUpperCase();
+                  this.organizationName = this.currentUser.name || 'Organization';
+
+                  this.userInitials = this.currentUser.name.charAt(0).toUpperCase();
                 } catch (e) {
                   console.error('Error parsing user data:', e);
                 }
@@ -2066,7 +2062,9 @@
               );
 
               if (response.success) {
-                this.newBankAccount.accountName = response.data.account_name;
+                console.log(' Verified account:', response.data);
+                console.log('Account Name:', response.data.account_name);
+                this.newBankAccount.accountName = response?.data.account_name;
                 showSuccessAlert('Account verified successfully!');
               } else {
                 showErrorAlert(response.message || 'Failed to verify account');
