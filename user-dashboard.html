@@ -185,7 +185,7 @@
             <button @click="toggleSidebar" class="lg:hidden text-white">
               <i data-lucide="menu"></i>
             </button>
-            <h1 class="text-lg font-bold text-white">VERISS PAYMENTS</h1>
+            <h1 class="lg:text-lg font-bold text-white">VERISS PAYMENTS</h1>
           </div>
           <div class="flex items-center gap-4">
             <a href="user-profile.html" class="flex items-center gap-2 cursor-pointer hover:opacity-90">
@@ -355,7 +355,7 @@
                     <p class="text-xs text-gray-500">No active services available</p>
                   </div>
 
-                  <div v-else class="space-y-2">
+                  <div v-else class="space-y-2 max-h-64 overflow-y-auto">
                     <div v-for="service in orgServices[sub.organization._id]" :key="service._id" class="service-card">
                       <div class="flex items-start justify-between mb-2">
                         <div class="flex-1">
@@ -765,7 +765,7 @@
           async initializeDashboard() {
             try {
               this.token = getCookie("auth_token");
-             const verissApp = JSON.parse(localStorage.getItem("verissApp"));
+              const verissApp = JSON.parse(localStorage.getItem("verissApp"));
               const userData = verissApp?.user_data;
               if (!this.token) {
                 window.location.href = "login.html";
@@ -773,7 +773,7 @@
               }
               if (userData) {
                 try {
-                  
+
                   this.currentUser = userData;
                 } catch (e) {
                   console.error("Error parsing user data:", e);
